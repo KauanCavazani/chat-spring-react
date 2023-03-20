@@ -1,0 +1,70 @@
+body {
+  background-color: #CDC4F9 !important;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.container{
+  height: 100vh;
+  display: flex;
+}
+
+#chat3 {
+  border-radius: 15px;
+  height: 100vh;
+}
+
+#chat3 .form-control {
+  border-color: transparent;
+}
+  
+#chat3 .form-control:focus {
+  border-color: transparent;
+  box-shadow: inset 0px 0px 0px 1px transparent;
+}
+
+.member-list {
+  position: relative;
+  height: 400px;
+}
+
+.message-list .card {
+  width: 85%;
+}
+
+.area-messages {
+  width: 66% !important;
+  max-height: 96vh;
+}
+
+.area-messages .member-list {
+  max-height: 87%;
+}
+
+.area-chat {
+  height: 100%;
+  overflow-y: scroll;
+}
+
+.area-messages i {
+  font-size: 1.5rem;
+}
+
+.active{
+  background: rgb(188, 227, 253);
+  color:#fff;
+  border-radius: 20px;
+}
+.member:hover{
+  background: grey;
+  color:#fff;
+}
