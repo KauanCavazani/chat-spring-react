@@ -13,10 +13,10 @@ const ChatRoom = () => {
     const [tab,setTab] =useState("CHATROOM");
 
     const [userData, setUserData] = useState({
-        username: null,
-        receivername: null,
+        username: "",
+        receivername: "",
         connected: false,
-        message: null
+        message: ""
     });
 
     useEffect(() => {}, [userData]);
@@ -41,7 +41,7 @@ const ChatRoom = () => {
     }
 
     const userJoin = () => {
-        var chatMessage = {
+        let chatMessage = {
             senderName: userData.username,
             status:"JOIN"
         };
@@ -61,6 +61,13 @@ const ChatRoom = () => {
                 publicChats.push(payloadData);
                 setPublicChats([...publicChats]);
                 scrollToDown();
+                break;
+            case "LEAVE":
+                if(privateChats.get(payloadData.senderName)) {
+                    setTab("CHATROOM");
+                    privateChats.delete(payloadData.senderName);
+                    setPrivateChats(new Map(privateChats));
+                }
                 break;
             default:
                 break;
@@ -88,7 +95,7 @@ const ChatRoom = () => {
 
     const sendPublicValue = () => {
         if (stompClient) {
-            var chatMessage = {
+            let chatMessage = {
                 senderName: userData.username,
                 message: userData.message,
                 status: "MESSAGE"
@@ -103,7 +110,7 @@ const ChatRoom = () => {
 
     const sendPrivateValue = () => {
         if (stompClient) {
-            var chatMessage = {
+            let chatMessage = {
                 senderName: userData.username,
                 receiverName: tab,
                 message: userData.message,
@@ -129,7 +136,6 @@ const ChatRoom = () => {
 
     const scrollToDown = () => {
         document.getElementById("areaPublicChat").scrollTop = document.getElementById("areaPublicChat").scrollHeight - 100;
-        console.log(document.getElementById("areaPublicChat").scrollTop, document.getElementById("areaPublicChat").scrollHeight)
     }
 
     const isValidMessage = (message) => {
@@ -141,6 +147,15 @@ const ChatRoom = () => {
         document.getElementById('sendBtn').classList.add('text-muted');
         return false;
     }
+
+    window.addEventListener("beforeunload", async () => {
+        let chatMessage = {
+            senderName: userData.username,
+            status:"LEAVE"
+        };
+        await stompClient.send("/app/message", {}, JSON.stringify(chatMessage));
+        await stompClient.close();
+    })
 
     return (
         <div className="container py-5">
