@@ -26,7 +26,7 @@ public class ChatController {
     public Message receivePrivateMessage(@Payload Message message) {
         System.out.println(message.toString());
         // /user/Kauan/private
-        simpMessagingTemplate.convertAndSendToUser(message.getReceiverName(), "/private", message);
+        simpMessagingTemplate.convertAndSendToUser(message.getReceiverId(), "/private", message);
         return message;
     }
 
