@@ -1,14 +1,17 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { over } from 'stompjs';
 import SockJS from 'sockjs-client';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-var stompClient =null;
+// var stompClient = null;
 const ChatRoom = () => {
 
     const [privateChats, setPrivateChats] = useState(new Map());     
     const [publicChats, setPublicChats] = useState([]); 
+
+    const stompClientRef = useRef(null);
+    const areaChatRef = useRef(null);
 
     const [tab,setTab] =useState("CHATROOM");
 
@@ -24,8 +27,9 @@ const ChatRoom = () => {
     const connect = () => {
         if(userData.username !== null && userData.username !== "") {
             let Sock = new SockJS('http://localhost:8080/ws');
-            stompClient = over(Sock);
+            const stompClient = over(Sock);
             stompClient.connect({}, onConnected, onError);
+            stompClientRef.current = stompClient;
         }
     }
 
@@ -35,8 +39,8 @@ const ChatRoom = () => {
 
     const onConnected = () => {
         setUserData({...userData,"connected": true});
-        stompClient.subscribe('/chatroom/public', onMessageReceived);
-        stompClient.subscribe('/user/'+userData.username+'/private', onPrivateMessage);
+        stompClientRef.current.subscribe('/chatroom/public', onMessageReceived);
+        stompClientRef.current.subscribe('/user/'+userData.username+'/private', onPrivateMessage);
         userJoin();
     }
 
@@ -45,7 +49,7 @@ const ChatRoom = () => {
             senderName: userData.username,
             status:"JOIN"
         };
-        stompClient.send("/app/message", {}, JSON.stringify(chatMessage));
+        stompClientRef.current.send("/app/message", {}, JSON.stringify(chatMessage));
     }
 
     const onMessageReceived = (payload) => {
@@ -94,7 +98,7 @@ const ChatRoom = () => {
     }
 
     const sendPublicValue = () => {
-        if (stompClient) {
+        if (stompClientRef.current) {
             let chatMessage = {
                 senderName: userData.username,
                 message: userData.message,
@@ -102,14 +106,14 @@ const ChatRoom = () => {
             };
 
             if(isValidMessage(chatMessage.message)) {
-                stompClient.send("/app/message", {}, JSON.stringify(chatMessage));
+                stompClientRef.current.send("/app/message", {}, JSON.stringify(chatMessage));
                 setUserData({...userData,"message": ""});
             }
         }
     }
 
     const sendPrivateValue = () => {
-        if (stompClient) {
+        if (stompClientRef.current) {
             let chatMessage = {
                 senderName: userData.username,
                 receiverName: tab,
@@ -123,7 +127,7 @@ const ChatRoom = () => {
             }
 
             if(isValidMessage(chatMessage.message)) {
-                stompClient.send("/app/private-message", {}, JSON.stringify(chatMessage));
+                stompClientRef.current.send("/app/private-message", {}, JSON.stringify(chatMessage));
                 setUserData({...userData,"message": ""});
             }
         }
@@ -132,10 +136,11 @@ const ChatRoom = () => {
     const handleUsername = (event) => {
         const {value} = event.target;
         setUserData({...userData,"username": value});
+        console.log(userData);
     }
 
     const scrollToDown = () => {
-        document.getElementById("areaPublicChat").scrollTop = document.getElementById("areaPublicChat").scrollHeight - 100;
+        areaChatRef.current.scrollTop = areaChatRef.current.scrollHeight - 100;
     }
 
     const isValidMessage = (message) => {
@@ -148,14 +153,33 @@ const ChatRoom = () => {
         return false;
     }
 
-    window.addEventListener("beforeunload", async () => {
+    window.addEventListener("beforeunload", async (e) => {
+        e.preventDefault();
+        sendMessageAndCloseConnection();
+    })
+
+    const sendMessageAndCloseConnection = async () => {
+        while (userData.username === "") {
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+
         let chatMessage = {
             senderName: userData.username,
-            status:"LEAVE"
+            status: "LEAVE"
         };
-        await stompClient.send("/app/message", {}, JSON.stringify(chatMessage));
-        await stompClient.close();
-    })
+
+        if (stompClientRef.current !== null) {
+            await stompClientRef.current.send("/app/message", {}, JSON.stringify(chatMessage));
+            await closeConnection();
+        }
+    }
+
+    const closeConnection = async () => {
+        if (stompClientRef.current !== null) {
+            await stompClientRef.current.disconnect();
+            stompClientRef.current = null;
+        }
+    }
 
     return (
         <div className="container py-5">
@@ -212,7 +236,7 @@ const ChatRoom = () => {
                                     </div>
                                     <div className='area-messages col-md-6 col-lg-7 col-xl-7 h-100'>
                                         <div className="pt-3 pe-3 member-list h-100">
-                                            <div className='area-chat' id='areaPublicChat'>
+                                            <div className='area-chat' ref={areaChatRef}>
                                             {tab === "CHATROOM" ?
                                                 <ul className='list-unstyled h-100'>
                                                     {publicChats.map((chat, index) => (
