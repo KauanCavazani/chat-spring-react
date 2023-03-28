@@ -1,4 +1,4 @@
-package com.example.chatserver.DTO;
+package com.example.chatserver.DTO.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,11 +9,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class UserRegisterLoginDTO {
+public class UserInfoDTO {
 
+    private int id;
     private String username;
-    private String email;
-    private String password;
     private String profilePictureUrl;
+    private boolean isOnline;
 
 }

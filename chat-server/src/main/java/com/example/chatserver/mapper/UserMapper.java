@@ -1,9 +1,12 @@
 package com.example.chatserver.mapper;
 
-import com.example.chatserver.DTO.UserInfoDTO;
-import com.example.chatserver.DTO.UserRegisterLoginDTO;
+import com.example.chatserver.DTO.user.UserInfoDTO;
+import com.example.chatserver.DTO.user.UserRegisterLoginDTO;
 import com.example.chatserver.model.User;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class UserMapper {
@@ -24,6 +27,15 @@ public class UserMapper {
                 user.getProfilePictureUrl(),
                 user.isOnline()
         );
+    }
+
+    public List<UserInfoDTO> toUserInfoListDTO(List<User> users) {
+        List<UserInfoDTO> usersInfoDTO = new ArrayList<>();
+        for (User user : users) {
+            usersInfoDTO.add(toUserInfoDTO(user));
+        }
+
+        return usersInfoDTO;
     }
 
 }

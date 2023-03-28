@@ -1,7 +1,5 @@
 package com.example.chatserver.service;
 
-import com.example.chatserver.DTO.UserInfoDTO;
-import com.example.chatserver.DTO.UserRegisterLoginDTO;
 import com.example.chatserver.mapper.UserMapper;
 import com.example.chatserver.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,34 +21,39 @@ public class UserService {
         this.id = 1;
     }
 
-    public UserInfoDTO register(UserRegisterLoginDTO newUserDTO) {
-        User newUser = mapper.toUser(newUserDTO);
+    public User register(User newUser) {
+        newUser.setId(id);
+        id++;
+        users.add(newUser);
+        return newUser;
+    }
+
+    public User login(User userLogin) {
         for (User user : users) {
-            if (!user.getEmail().equals(newUser.getEmail()) &&
-                !user.getPassword().equals(newUser.getPassword()) &&
-                !user.getUsername().equals(newUser.getUsername())
+            if (user.getEmail().equals(userLogin.getEmail()) &&
+                user.getPassword().equals(userLogin.getPassword())
             ) {
-                newUser.setId(id);
-                id++;
-                users.add(newUser);
-                return mapper.toUserInfoDTO(newUser);
+                user.setOnline(true);
+                return user;
             }
         }
 
         return null;
     }
 
-    public UserInfoDTO login(UserRegisterLoginDTO userLogin) {
+    public boolean logoff(int id) {
         for (User user : users) {
-            if (user.getEmail().equals(userLogin.getEmail()) &&
-                user.getPassword().equals(userLogin.getPassword())
-            ) {
-                user.setOnline(true);
-                return mapper.toUserInfoDTO(user);
+            if (user.getId() == id) {
+                user.setOnline(false);
+                return true;
             }
         }
 
-        return null;
+        return false;
+    }
+
+    public List<User> getUsers() {
+        return users;
     }
 
 }
