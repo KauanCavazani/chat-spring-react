@@ -1,7 +1,7 @@
 package com.example.chatserver.service;
 
 import com.example.chatserver.DTO.group.GroupCreateDTO;
-import com.example.chatserver.DTO.group.GroupDTO;
+import com.example.chatserver.DTO.group.GroupResponseDTO;
 import com.example.chatserver.mapper.GroupMapper;
 import com.example.chatserver.model.Group;
 import com.example.chatserver.model.User;
@@ -26,10 +26,9 @@ public class GroupService {
         this.id = 1;
     }
 
-    public Group create(GroupCreateDTO newGroupDTO) {
+    public GroupResponseDTO create(GroupCreateDTO newGroupDTO) {
         List<User> members = new ArrayList<>();
         for (User user : userService.getUsers()) {
-            System.out.println(newGroupDTO.toString());
             for (int idMember : newGroupDTO.getIdMembers()) {
                 if (user.getId() == idMember) {
                     members.add(user);
@@ -41,16 +40,22 @@ public class GroupService {
         newGroup.setId(id);
         groups.add(newGroup);
         id++;
-        return newGroup;
+        return mapper.toGroupResponseDTO(newGroup, members);
     }
 
-    public boolean addMember(GroupDTO groupAddMemberDTO) {
+    public boolean addMember(int idGroup, int idAdmin, int idMember) {
         for (Group group : groups) {
-            if (group.getId() == groupAddMemberDTO.getIdGroup()) {
-                if (group.getIdAdm() == groupAddMemberDTO.getIdMember()) {
+            if (group.getId() == idGroup) {
+                if (group.getIdAdm() == idAdmin) {
+                    for (User member : group.getMembers()) {
+                        if (member.getId() == idMember) {
+                            return false;
+                        }
+                    }
+
                     List<User> users = userService.getUsers();
                     for (User user : users) {
-                        if (user.getId() == groupAddMemberDTO.getIdMember()) {
+                        if (user.getId() == idMember) {
                             group.getMembers().add(user);
                             return true;
                         }
@@ -62,7 +67,7 @@ public class GroupService {
         return false;
     }
 
-    public List<Group> getByIdMember(int id) {
+    public List<GroupResponseDTO> getByIdMember(int id) {
         List<Group> groupsParticipating = new ArrayList<>();
         for (Group group : groups) {
             for (User member : group.getMembers()) {
@@ -72,15 +77,15 @@ public class GroupService {
             }
         }
 
-        return groupsParticipating;
+        return mapper.toGroupResponseListDTO(groupsParticipating);
     }
 
-    public boolean deleteMember(GroupDTO groupDTO) {
+    public boolean deleteMember(int idGroup, int idAdmin, int idMember) {
         for (Group group : groups) {
-            if (group.getId() == groupDTO.getIdGroup()) {
-                if (group.getIdAdm() == groupDTO.getIdAdmin()) {
+            if (group.getId() == idGroup) {
+                if (group.getIdAdm() == idAdmin) {
                     for (User member : group.getMembers()) {
-                        if (member.getId() == groupDTO.getIdMember()) {
+                        if (member.getId() != idAdmin && member.getId() == idMember) {
                             group.getMembers().remove(member);
                             return true;
                         }
@@ -92,11 +97,11 @@ public class GroupService {
         return false;
     }
 
-    public boolean leave(GroupDTO groupDTO) {
+    public boolean leave(int idGroup, int idMember) {
         for (Group group : groups) {
-            if (group.getId() == groupDTO.getIdGroup()) {
+            if (group.getId() == idGroup) {
                 for (User member : group.getMembers()) {
-                    if (member.getId() == groupDTO.getIdMember()) {
+                    if (member.getId() == idMember) {
                         group.getMembers().remove(member);
                         return true;
                     }

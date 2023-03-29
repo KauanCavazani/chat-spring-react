@@ -11,7 +11,7 @@ import java.util.List;
 @ToString
 public class GroupCreateDTO {
 
-    private int idAdm;
+    private int idAdmin;
     private String name;
     private String profilePictureUrl;
     private List<Integer> idMembers;

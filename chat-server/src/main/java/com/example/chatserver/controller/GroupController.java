@@ -1,8 +1,7 @@
 package com.example.chatserver.controller;
 
 import com.example.chatserver.DTO.group.GroupCreateDTO;
-import com.example.chatserver.DTO.group.GroupDTO;
-import com.example.chatserver.model.Group;
+import com.example.chatserver.DTO.group.GroupResponseDTO;
 import com.example.chatserver.service.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,15 +17,18 @@ public class GroupController {
     private GroupService service;
 
     @PostMapping
-    public ResponseEntity<Group> createGroup(GroupCreateDTO groupCreateDTO) {
-        System.out.println(groupCreateDTO.toString());
-        Group groupCreated = service.create(groupCreateDTO);
+    public ResponseEntity<GroupResponseDTO> create(@RequestBody GroupCreateDTO groupCreateDTO) {
+        GroupResponseDTO groupCreated = service.create(groupCreateDTO);
         return ResponseEntity.status(201).body(groupCreated);
     }
 
-    @PostMapping("/member")
-    public ResponseEntity<Void> addMember(GroupDTO groupDTO) {
-        if (service.addMember(groupDTO)) {
+    @PostMapping("/{idGroup}/{idAdmin}/{idMember}")
+    public ResponseEntity<Void> addMember(
+            @PathVariable int idGroup,
+            @PathVariable int idAdmin,
+            @PathVariable int idMember
+    ) {
+        if (service.addMember(idGroup, idAdmin, idMember)) {
             return ResponseEntity.status(200).build();
         }
 
@@ -34,8 +36,8 @@ public class GroupController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<List<Group>> getByIdMember(@PathVariable int id) {
-        List<Group> groups = service.getByIdMember(id);
+    public ResponseEntity<List<GroupResponseDTO>> getByIdMember(@PathVariable int id) {
+        List<GroupResponseDTO> groups = service.getByIdMember(id);
         if (!groups.isEmpty()) {
             return ResponseEntity.status(200).body(groups);
         }
@@ -43,18 +45,25 @@ public class GroupController {
         return ResponseEntity.status(204).body(groups);
     }
 
-    @DeleteMapping
-    public ResponseEntity<Void> deleteMember(GroupDTO groupDTO) {
-        if (service.deleteMember(groupDTO)) {
+    @DeleteMapping("/{idGroup}/{idAdmin}/{idMember}")
+    public ResponseEntity<Void> deleteMember(
+            @PathVariable int idGroup,
+            @PathVariable int idAdmin,
+            @PathVariable int idMember
+    ) {
+        if (service.deleteMember(idGroup, idAdmin, idMember)) {
             return ResponseEntity.status(200).build();
         }
 
         return ResponseEntity.status(400).build();
     }
 
-    @DeleteMapping("/leave")
-    public ResponseEntity<Void> leaveGroup(GroupDTO groupDTO) {
-        if (service.leave(groupDTO)) {
+    @DeleteMapping("/{idGroup}/{idMember}")
+    public ResponseEntity<Void> leave(
+            @PathVariable int idGroup,
+            @PathVariable int idMember
+    ) {
+        if (service.leave(idGroup, idMember)) {
             return ResponseEntity.status(200).build();
         }
 
