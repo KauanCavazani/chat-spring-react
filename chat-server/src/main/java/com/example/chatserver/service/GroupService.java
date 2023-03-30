@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class GroupService {
@@ -103,6 +104,7 @@ public class GroupService {
                 for (User member : group.getMembers()) {
                     if (member.getId() == idMember) {
                         group.getMembers().remove(member);
+                        group.setIdAdm(getRandomMemberId(group));
                         return true;
                     }
                 }
@@ -110,6 +112,12 @@ public class GroupService {
         }
 
         return false;
+    }
+
+    private int getRandomMemberId(Group group) {
+        Random random = new Random();
+        int randomIndex = random.nextInt(group.getMembers().size());
+        return group.getMembers().get(randomIndex).getId();
     }
 
 }
